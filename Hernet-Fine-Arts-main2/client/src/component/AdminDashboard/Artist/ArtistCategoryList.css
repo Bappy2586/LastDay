@@ -1,0 +1,66 @@
+.artist-category-wrapper {
+  display: flex;
+  gap: 30px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin: 20px;
+}
+
+.artist-form {
+  background: #f4f6f8;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 260px;
+  box-shadow: 0 1px 6px #ccc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.artist-form input {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.artist-form button {
+  padding: 8px;
+  border: none;
+  background: #1976d2;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.artist-form button.cancel {
+  background: #888;
+}
+
+.artist-list {
+  flex: 1;
+}
+
+.artist-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.artist-list th, .artist-list td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.artist-list button {
+  margin-right: 5px;
+  padding: 5px 10px;
+  border: none;
+  background: #1976d2;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.artist-list button:last-child {
+  background: #d32f2f;
+}

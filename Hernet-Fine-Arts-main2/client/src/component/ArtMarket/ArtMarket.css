@@ -1,0 +1,160 @@
+/* Container spacing */
+.art-market-container {
+    padding: 20px;
+}
+
+/* Sidebar styling */
+.sidebar {
+    padding: 15px;
+    margin-right: 10px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    text-align: left;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.row.d-flex {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.sidebar h5 {
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.sidebar label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Main content spacing */
+.main-content {
+    margin-top: 5px;
+    margin-bottom: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+/* Form and list wrapper */
+.artist-category-wrapper {
+    display: flex;
+    gap: 30px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin: 20px 0;
+}
+
+/* Form styling */
+.artist-form {
+    background: #f4f6f8;
+    padding: 20px;
+    border-radius: 8px;
+    min-width: 260px;
+    box-shadow: 0 1px 6px #ccc;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.artist-form input {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.artist-form button {
+    padding: 8px;
+    border: none;
+    background: #1976d2;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.artist-form button.cancel {
+    background: #888;
+}
+
+/* List styling */
+.artist-list {
+    flex: 1;
+}
+
+.artist-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.artist-list th, .artist-list td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.artist-list button {
+    margin-right: 5px;
+    padding: 5px 10px;
+    border: none;
+    background: #1976d2;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.artist-list button:last-child {
+    background: #d32f2f;
+}
+
+/* Buttons styling */
+.filter-buttons {
+    margin-bottom: 20px;
+}
+
+.btn {
+    margin-right: 10px;
+}
+
+/* Artwork cards grid */
+.card {
+    margin: 5px;
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.08);
+    background: #fff;
+}
+
+.card h5,
+.card p {
+    margin: 5px 0;
+    line-height: 1.2;
+}
+
+.card .price {
+    text-align: right;
+    display: block;
+    font-weight: bold;
+}
+
+/* Artwork image styling */
+.my-image {
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+}
+
+/* Button row styling */
+.butt {
+    display: flex;
+}
+
+/* General text alignment */
+p {
+    text-align: left;
+}

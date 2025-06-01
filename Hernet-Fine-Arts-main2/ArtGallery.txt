@@ -1,0 +1,514 @@
+My Backend code
+
+
+server
+  controller
+      ArtMarketController.js
+  
+   model
+      ArtMarketModel.js
+   
+   routes
+        ArtMarketRoute.js
+
+   index.js
+
+uploads
+
+
+
+
+server/index.js
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "path";
+import artMarketRoutes from "./routes/ArtMarketRoute.js";
+
+dotenv.config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Serve uploaded images statically
+app.use("/uploads", express.static(path.resolve("uploads")));
+
+// ArtMarket API routes
+app.use("/api/artMarket", artMarketRoutes);
+
+const PORT = process.env.PORT || 4000;
+const MONGOURL = process.env.MONGO_URL;
+
+if (!PORT || !MONGOURL) {
+  console.error("Missing env vars. Check your .env file.");
+  process.exit(1);
+}
+
+mongoose
+  .connect(MONGOURL)
+  .then(() => {
+    console.log("DB connected.");
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((error) => console.log(error));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+server/model/ArtMarketModel.js
+import mongoose from "mongoose";
+
+const artMarketSchema = new mongoose.Schema({
+  fname: {
+    type: String,
+    required: true,
+  },
+  imgpath: {
+    type: String,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+export default mongoose.model("ArtMarket", artMarketSchema);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+server/controller/ArtMarketController.js
+import ArtMarket from "../model/ArtMarketModel.js";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+// Ensure uploads folder exists
+const uploadsDir = "./uploads";
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `image-${Date.now()}${path.extname(file.originalname)}`);
+  },
+});
+
+const isImage = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only images are allowed"));
+  }
+};
+
+const upload = multer({ storage, fileFilter: isImage });
+
+export const createArtMarket = [
+  upload.single("photo"),
+  async (req, res) => {
+    try {
+      const { fname } = req.body;
+      const file = req.file;
+
+      if (!fname || !file) {
+        return res.status(400).json({ status: 400, message: "Fill all the data" });
+      }
+
+      const art = new ArtMarket({
+        fname,
+        imgpath: file.filename,
+        date: new Date()
+      });
+
+      const finalData = await art.save();
+      res.status(201).json({ status: 201, finalData });
+    } catch (error) {
+      res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+];
+
+export const getArtsMarket = async (req, res) => {
+  try {
+    const arts = await ArtMarket.find();
+    res.status(200).json({ status: 200, getUser: arts });
+  } catch (error) {
+    res.status(500).json({ status: 500, error: error.message });
+  }
+};
+
+export const deleteArtMarket = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedArt = await ArtMarket.findByIdAndDelete(id);
+
+    if (!deletedArt) {
+      return res.status(404).json({ status: 404, message: "Art not found" });
+    }
+
+    const imgPath = path.join(uploadsDir, deletedArt.imgpath);
+    if (fs.existsSync(imgPath)) {
+      fs.unlinkSync(imgPath);
+    }
+
+    res.status(200).json({ status: 200, dltUser: deletedArt });
+  } catch (error) {
+    res.status(500).json({ status: 500, error: error.message });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+server/routes/ArtMarketRoute.js
+import express from "express";
+import {
+  createArtMarket,
+  getArtsMarket,
+  deleteArtMarket,
+} from "../controller/ArtMarketController.js";
+
+const router = express.Router();
+
+router.post("/", createArtMarket);
+router.get("/", getArtsMarket);
+router.delete("/:id", deleteArtMarket);
+
+export default router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.env
+
+PORT=4000
+MONGO_URL=mongodb://localhost:27017/mern
+SECRET_KEY=HelloWorld
+
+
+
+
+
+
+
+
+
+
+
+My Frontend code
+
+
+
+
+
+src
+  component 
+     ArtMarket
+        ArtMarket.js
+        DataEntryForm.js
+      
+
+
+
+
+
+  component/ArtMarket/ArtMarket.js
+   import React, { useEffect, useState } from "react";
+import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import moment from "moment";
+import Alert from "react-bootstrap/Alert";
+
+const ArtMarket = () => {
+  const [data, setData] = useState([]);
+  const [show, setShow] = useState(false);
+
+  const getUserData = async () => {
+    try {
+      const res = await axios.get("/api/artMarket", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.data.status !== 200 || !res.data) {
+        console.log("error");
+      } else {
+        setData(res.data.getUser);
+      }
+    } catch (err) {
+      console.log("error", err);
+    }
+  };
+
+  const dltUser = async (id) => {
+    try {
+      const res = await axios.delete(`/api/artMarket/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.data.status !== 200 || !res.data) {
+        console.log("error");
+      } else {
+        getUserData();
+        setShow(true);
+      }
+    } catch (err) {
+      console.log("error", err);
+    }
+  };
+
+  useEffect(() => {
+    getUserData();
+  }, []);
+
+  return (
+    <>
+      {show ? (
+        <Alert variant="danger" onClose={() => setShow(false)} dismissible>
+          User Deleted
+        </Alert>
+      ) : (
+        ""
+      )}
+      <div className="container mt-2">
+        <h1 className="text-center mt-2">MERN Image Upload Projects</h1>
+        <div className="text-end">
+          <Button variant="primary">
+            <Link to="/dataEntryForm" className="text-decoration-none text-light">
+              Add User
+            </Link>
+          </Button>
+        </div>
+
+        <div className="row d-flex justify-content-between align-items-center mt-5">
+          {data.length > 0
+            ? data.map((el, i) => (
+                <Card
+                  style={{ width: "22rem", height: "18rem" }}
+                  className="mb-3"
+                  key={el._id}
+                >
+                  <Card.Img
+                    variant="top"
+                    style={{
+                      width: "100px",
+                      textAlign: "center",
+                      margin: "auto",
+                    }}
+                    src={`/uploads/${el.imgpath}`}
+                    className="mt-2"
+                  />
+                  <Card.Body className="text-center">
+                    <Card.Title>User Name : {el.fname}</Card.Title>
+                    <Card.Text>
+                      Date Added : {moment(el.date).format("L")}
+                    </Card.Text>
+                    <Button
+                      variant="danger"
+                      className="col-lg-6 text-center"
+                      onClick={() => dltUser(el._id)}
+                    >
+                      Delete
+                    </Button>
+                  </Card.Body>
+                </Card>
+              ))
+            : ""}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default ArtMarket;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  component/ArtMarket/DataEntryForm.js
+import React, { useState } from "react";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+const DataEntryForm = () => {
+  const [fname, setFName] = useState("");
+  const [file, setFile] = useState(null);
+
+  const navigate = useNavigate();
+
+  const setdata = (e) => {
+    setFName(e.target.value);
+  };
+
+  const setimgfile = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const addUserData = async (e) => {
+    e.preventDefault();
+
+    if (!fname || !file) {
+      alert("Please provide both a name and an image.");
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append("photo", file);
+    formData.append("fname", fname);
+
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    try {
+      const res = await axios.post("/api/artMarket", formData, config);
+
+      if (!res.data || res.data.status !== 201) {
+        alert("Could not save. " + (res.data?.message || "Unknown error"));
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      alert("Network or server error: " + err.message);
+    }
+  };
+
+  return (
+    <>
+      <div className="container mt-3">
+        <h1>Upload Your Img Here</h1>
+
+        <Form className="mt-3" onSubmit={addUserData}>
+          <Form.Group className="mb-3" controlId="formBasicEmail">
+            <Form.Label>UserName</Form.Label>
+            <Form.Control
+              type="text"
+              name="fname"
+              onChange={setdata}
+              placeholder=""
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3" controlId="formBasicPassword">
+            <Form.Label>Select Your Image</Form.Label>
+            <Form.Control
+              type="file"
+              onChange={setimgfile}
+              name="photo"
+              placeholder=""
+              accept="image/*"
+              required
+            />
+          </Form.Group>
+          <Button variant="primary" type="submit">
+            Submit
+          </Button>
+        </Form>
+      </div>
+    </>
+  );
+};
+
+export default DataEntryForm;
